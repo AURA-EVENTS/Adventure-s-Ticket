@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Adventure's Ticket</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+    }
+    h1 { margin-top: 20px; }
+    .screen {
+      background: #eee;
+      height: 40px;
+      width: 60%;
+      margin: 20px auto;
+      color: #000;
+      line-height: 40px;
+      font-weight: bold;
+    }
+    .seats {
+      display: grid;
+      grid-template-columns: repeat(15, 40px);
+      gap: 10px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+    .seat {
+      width: 40px;
+      height: 40px;
+      background: #2ecc71;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .seat.selected { background: #f1c40f; }
+    .seat.booked {
+      background: #e74c3c;
+      cursor: not-allowed;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎟️ Adventure's Ticket</h1>
+  <div class="screen">SCREEN</div>
+
+  <div class="seats" id="seats"></div>
+
+  <p id="result"></p>
+  <button onclick="bookSeats()">Confirm Booking</button>
+
+  <script>
+    const seatsContainer = document.getElementById('seats');
+    const result = document.getElementById('result');
+
+    const rows = 20;
+    const cols = 15;
+    const totalSeats = rows * cols;
+    // seats will be loaded from Google Sheet via Apps Script
+let bookedSeats = [];
+
+    // load booked seats from Google Sheet
+fetch('https://script.google.com/macros/s/AKfycbyDhdZZbAkHa4x7oAOgdfPg1Z3aBmN_mYygxgp9UFAihrGVsDhxB07yoyDfY9an41RMeQ/exec')
+  .then(res => res.json())
+  .then(data => {
+    bookedSeats = data.bookedSeats;
+    document.querySelectorAll('.seat').forEach(seat => {
+      if (bookedSeats.includes(seat.innerText)) {
+        seat.classList.add('booked');
+      }
+    });
+  });
+
+    let seatNumber = 1;
+    for (let r = 0; r < rows; r++) {
+      const rowLetter = String.fromCharCode(65 + r);
+      for (let c = 1; c <= cols; c++) {
+        const seat = document.createElement('div');
+        seat.classList.add('seat');
+        seat.innerText = rowLetter + c;
+
+        seat.addEventListener('click', () => {
+          if (seat.classList.contains('booked')) return;
+          seat.classList.toggle('selected');
+        });
+
+        seatsContainer.appendChild(seat);
+        seatNumber++;
+      }
+    }
+
+    function bookSeats() {
+  const selectedSeats = document.querySelectorAll('.seat.selected');
+  if (selectedSeats.length === 0) {
+    alert('Please select at least one seat');
+    return;
+  }
+
+  const newlyBooked = [];
+  selectedSeats.forEach(seat => newlyBooked.push(seat.innerText));
+
+  fetch('https://script.google.com/macros/s/AKfycbyDhdZZbAkHa4x7oAOgdfPg1Z3aBmN_mYygxgp9UFAihrGVsDhxB07yoyDfY9an41RMeQ/execس', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ seats: newlyBooked })
+  })
+  .then(res => res.json())
+  .then(() => {
+    selectedSeats.forEach(seat => {
+      seat.classList.remove('selected');
+      seat.classList.add('booked');
+    });
+    alert('✅ Booking confirmed: ' + newlyBooked.join(', '));
+  });
+}
+  </script>
+</body>
+</html>
