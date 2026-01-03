@@ -88,7 +88,7 @@ let bookedSeats = [];
     }
 
     // load booked seats from Google Sheet (AFTER seats are created)
-    fetch('https://script.google.com/macros/s/AKfycbyPTClp5oE2bweKlciVwA5X9vcUI102fMHCzkfTi8pbyi5bgBWIRi27oHNRJPXYHVlw1A/exec')
+    fetch('https://script.google.com/macros/s/AKfycby7GWDQH9bzQ5S6SJPDUvqyx1WW93bWgtF3afzA5DcQAnkS_tP52I_O9lkK2KdbCXT48w/exec')
       .then(res => res.json())
       .then(data => {
         bookedSeats = data.bookedSeats || [];
@@ -113,7 +113,7 @@ let bookedSeats = [];
   const newlyBooked = [];
   selectedSeats.forEach(seat => newlyBooked.push(seat.innerText));
 
-  fetch('https://script.google.com/macros/s/AKfycbyPTClp5oE2bweKlciVwA5X9vcUI102fMHCzkfTi8pbyi5bgBWIRi27oHNRJPXYHVlw1A/exec', {
+  fetch('https://script.google.com/macros/s/AKfycby7GWDQH9bzQ5S6SJPDUvqyx1WW93bWgtF3afzA5DcQAnkS_tP52I_O9lkK2KdbCXT48w/exec', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ seats: newlyBooked })
@@ -138,3 +138,4 @@ let bookedSeats = [];
   </script>
 </body>
 </html>
+
