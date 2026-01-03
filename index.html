@@ -22,7 +22,7 @@
     }
     .seats {
       display: grid;
-      grid-template-columns: repeat(15, 40px);
+      grid-template-columns: repeat(30, 40px);
       gap: 10px;
       justify-content: center;
       margin: 20px auto;
@@ -60,23 +60,14 @@
     const seatsContainer = document.getElementById('seats');
     const result = document.getElementById('result');
 
-    const rows = 20;
-    const cols = 15;
+    const rows = 10;
+    const cols = 30;
     const totalSeats = rows * cols;
     // seats will be loaded from Google Sheet via Apps Script
 let bookedSeats = [];
 
-    // load booked seats from Google Sheet
-fetch('https://script.google.com/macros/s/AKfycbyDhdZZbAkHa4x7oAOgdfPg1Z3aBmN_mYygxgp9UFAihrGVsDhxB07yoyDfY9an41RMeQ/exec')
-  .then(res => res.json())
-  .then(data => {
-    bookedSeats = data.bookedSeats;
-    document.querySelectorAll('.seat').forEach(seat => {
-      if (bookedSeats.includes(seat.innerText)) {
-        seat.classList.add('booked');
-      }
-    });
-  });
+    // seats will be loaded after creation
+
 
     let seatNumber = 1;
     for (let r = 0; r < rows; r++) {
@@ -96,6 +87,22 @@ fetch('https://script.google.com/macros/s/AKfycbyDhdZZbAkHa4x7oAOgdfPg1Z3aBmN_mY
       }
     }
 
+    // load booked seats from Google Sheet (AFTER seats are created)
+    fetch('https://script.google.com/macros/s/AKfycbyPTClp5oE2bweKlciVwA5X9vcUI102fMHCzkfTi8pbyi5bgBWIRi27oHNRJPXYHVlw1A/exec')
+      .then(res => res.json())
+      .then(data => {
+        bookedSeats = data.bookedSeats || [];
+        document.querySelectorAll('.seat').forEach(seat => {
+          if (bookedSeats.includes(seat.innerText)) {
+            seat.classList.add('booked');
+          }
+        });
+      })
+      .catch(err => {
+        console.error('GET error:', err);
+        alert('❌ Failed to load seats');
+      });
+
     function bookSeats() {
   const selectedSeats = document.querySelectorAll('.seat.selected');
   if (selectedSeats.length === 0) {
@@ -106,18 +113,26 @@ fetch('https://script.google.com/macros/s/AKfycbyDhdZZbAkHa4x7oAOgdfPg1Z3aBmN_mY
   const newlyBooked = [];
   selectedSeats.forEach(seat => newlyBooked.push(seat.innerText));
 
-  fetch('https://script.google.com/macros/s/AKfycbyDhdZZbAkHa4x7oAOgdfPg1Z3aBmN_mYygxgp9UFAihrGVsDhxB07yoyDfY9an41RMeQ/execس', {
+  fetch('https://script.google.com/macros/s/AKfycbyPTClp5oE2bweKlciVwA5X9vcUI102fMHCzkfTi8pbyi5bgBWIRi27oHNRJPXYHVlw1A/exec', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ seats: newlyBooked })
   })
   .then(res => res.json())
-  .then(() => {
+  .then(data => {
+    if (!data || data.status !== 'success') {
+      alert('❌ Booking failed');
+      return;
+    }
     selectedSeats.forEach(seat => {
       seat.classList.remove('selected');
       seat.classList.add('booked');
     });
     alert('✅ Booking confirmed: ' + newlyBooked.join(', '));
+  })
+  .catch(err => {
+    console.error('POST error:', err);
+    alert('❌ Booking request error');
   });
 }
   </script>
